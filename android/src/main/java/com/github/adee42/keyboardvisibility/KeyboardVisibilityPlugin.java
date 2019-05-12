@@ -12,9 +12,9 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -22,15 +22,15 @@ import android.view.ViewTreeObserver;
 
 public class KeyboardVisibilityPlugin implements StreamHandler, Application.ActivityLifecycleCallbacks, ViewTreeObserver.OnGlobalLayoutListener {
     private static final String STREAM_CHANNEL_NAME = "github.com/adee42/flutter_keyboard_visibility";
+    View mainView = null;
     EventSink eventsSink;
+    Registrar registrar;
     boolean isVisible;
-    View mainView;
 
 
     KeyboardVisibilityPlugin(Registrar registrar) {
+		this.registrar = registrar;
         eventsSink = null;
-        mainView = ((ViewGroup) registrar.activity().findViewById(android.R.id.content)).getChildAt(0);
-        mainView.getViewTreeObserver().addOnGlobalLayoutListener(this);
     }
 
     @Override
@@ -53,38 +53,47 @@ public class KeyboardVisibilityPlugin implements StreamHandler, Application.Acti
 
     @Override
     public void onActivityCreated(Activity activity, Bundle bundle) {
-
     }
 
     @Override
     public void onActivityStarted(Activity activity) {
-
+        try {
+            mainView = ((ViewGroup)activity.findViewById(android.R.id.content)).getChildAt(0);
+            mainView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+        }
+        catch (Exception e) {
+            // do nothing
+        }
     }
 
     @Override
     public void onActivityResumed(Activity activity) {
-
     }
 
     @Override
     public void onActivityPaused(Activity activity) {
-
     }
 
     @Override
     public void onActivityStopped(Activity activity) {
-
+        unregisterListener();
     }
 
     @Override
     public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
-
     }
 
     @Override
     public void onActivityDestroyed(Activity activity) {
 
-        mainView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+        unregisterListener();
+    }
+
+    private void unregisterListener() {
+        if (mainView != null) {
+            mainView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            mainView = null;
+        }
     }
 
     public static void registerWith(Registrar registrar) {
@@ -92,6 +101,8 @@ public class KeyboardVisibilityPlugin implements StreamHandler, Application.Acti
         final EventChannel eventChannel = new EventChannel(registrar.messenger(), STREAM_CHANNEL_NAME);
         KeyboardVisibilityPlugin instance = new KeyboardVisibilityPlugin(registrar);
         eventChannel.setStreamHandler(instance);
+
+        registrar.activity().getApplication().registerActivityLifecycleCallbacks(instance);
     }
 
     @Override
