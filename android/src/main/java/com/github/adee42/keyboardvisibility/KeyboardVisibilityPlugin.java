@@ -29,8 +29,11 @@ public class KeyboardVisibilityPlugin implements StreamHandler, Application.Acti
 
     KeyboardVisibilityPlugin(Registrar registrar) {
         eventsSink = null;
-        mainView = ((ViewGroup) registrar.activity().findViewById(android.R.id.content)).getChildAt(0);
-        mainView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+        Activity activity = registrar.activity();
+        if (activity != null) {
+            mainView = ((ViewGroup).findViewById(android.R.id.content)).getChildAt(0);
+            mainView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+        }
     }
 
     @Override
@@ -83,12 +86,12 @@ public class KeyboardVisibilityPlugin implements StreamHandler, Application.Acti
 
     @Override
     public void onActivityDestroyed(Activity activity) {
-
-        mainView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+        if (mainView != null) {
+            mainView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+        }
     }
 
     public static void registerWith(Registrar registrar) {
-
         final EventChannel eventChannel = new EventChannel(registrar.messenger(), STREAM_CHANNEL_NAME);
         KeyboardVisibilityPlugin instance = new KeyboardVisibilityPlugin(registrar);
         eventChannel.setStreamHandler(instance);
