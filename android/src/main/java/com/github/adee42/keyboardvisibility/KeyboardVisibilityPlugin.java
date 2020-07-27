@@ -31,7 +31,7 @@ public class KeyboardVisibilityPlugin implements StreamHandler, Application.Acti
         eventsSink = null;
         Activity activity = registrar.activity();
         if (activity != null) {
-            mainView = ((ViewGroup).findViewById(android.R.id.content)).getChildAt(0);
+            mainView = ((ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
             mainView.getViewTreeObserver().addOnGlobalLayoutListener(this);
         }
     }
