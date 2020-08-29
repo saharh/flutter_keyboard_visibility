@@ -31,8 +31,13 @@ public class KeyboardVisibilityPlugin implements StreamHandler, Application.Acti
         eventsSink = null;
         Activity activity = registrar.activity();
         if (activity != null) {
-            mainView = ((ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
-            mainView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+            ViewGroup contentView = activity.findViewById(android.R.id.content);
+            mainView = contentView.getChildAt(0);
+            if (mainView != null) {
+                mainView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+            } else {
+                Log.w("KeyboardVisibility", "mainView == null, skipping keyboard visibility setup");
+            }
         }
     }
 
@@ -44,7 +49,7 @@ public class KeyboardVisibilityPlugin implements StreamHandler, Application.Acti
 
         // check if the visible part of the screen is less than 85%
         // if it is then the keyboard is showing
-        boolean newState = ((double)r.height() / (double)mainView.getRootView().getHeight()) < 0.85;
+        boolean newState = ((double) r.height() / (double) mainView.getRootView().getHeight()) < 0.85;
 
         if (newState != isVisible) {
             isVisible = newState;
